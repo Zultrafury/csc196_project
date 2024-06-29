@@ -9,7 +9,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e51aa088-3ef4-4edf-904e-189c39e84fb8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/csc196-gameengine.sln" beforeDir="false" afterPath="$PROJECT_DIR$/csc196-gameengine.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Solution1/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Solution1/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/Engine.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/Engine.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/x64/Release/Engine.iobj" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/x64/Release/Engine.iobj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/x64/Release/Engine.ipdb" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/x64/Release/Engine.ipdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/x64/Release/Engine.obj" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/x64/Release/Engine.obj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Engine/x64/Release/vc142.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Engine/x64/Release/vc142.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/x64/Release/Engine.exe" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Release/Engine.exe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/x64/Release/Engine.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Release/Engine.pdb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,7 +96,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719625968475</updated>
-      <workItem from="1719625969738" duration="1017000" />
+      <workItem from="1719625969738" duration="2901000" />
     </task>
     <servers />
   </component>
