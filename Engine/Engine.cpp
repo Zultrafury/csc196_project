@@ -29,46 +29,70 @@ int main(int argc, char* argv[])
     }
 
     // create renderer
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    for (int i = 0; i < SDL_GetNumRenderDrivers(); ++i)
+    {
+        SDL_RendererInfo info;
+        SDL_GetRenderDriverInfo(i,&info);
+        std::cout << i << ": " << info.name << "\n";
+    }
+    SDL_GetNumRenderDrivers();
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, 0, 0);
 
     //SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    std::vector<Vector2> mousepos;
+    std::vector<Vector2> freestylepoints;
+    std::vector<Vector2> linepoints;
+    Uint32 lineengage = 0;
     
     auto startnano = std::chrono::high_resolution_clock::now();
     
     while (true)
     {
+        SDL_PumpEvents();
         // clear screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
-
-        auto nextnano = std::chrono::high_resolution_clock::now();
+        
         // draw and update
 
         //update
         Vector2 tempvector(0,0);
-        SDL_GetMouseState(&tempvector.x,&tempvector.y);
-        mousepos.push_back(tempvector);
+        Uint32 buttons = SDL_GetMouseState(&tempvector.x,&tempvector.y);
+        if (buttons == 1)
+        {
+            freestylepoints.push_back(tempvector);
+        }
+        else if (buttons == 2 && lineengage != 2)
+        {
+            linepoints.push_back(tempvector);
+            std::cout << tempvector.x << ", " << tempvector.y << "\n";
+        }
+        lineengage = buttons;
 
         //draw
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        //std::cout << mousepos.x << ", " << mousepos.y << "\n";
-        for (int i = 0; i < mousepos.size(); ++i)
+        for (int i = 0; i < freestylepoints.size(); ++i)
         {
-            SDL_RenderDrawPoint(renderer,mousepos.at(i).x,mousepos.at(i).y);
+            SDL_SetRenderDrawColor(renderer, rand()%255, rand()%255, rand()%255, 255);
+            SDL_RenderDrawPoint(renderer,freestylepoints.at(i).x,freestylepoints.at(i).y);
         }
-        
-        //auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
-        //if (nanointerval > (1000000000/60))
-        //{
-        //    startnano = nextnano;
+        if (linepoints.size() > 1)
+        {
+            for (int i = 0; i < linepoints.size()-1; ++i)
+            {
+                SDL_SetRenderDrawColor(renderer, rand()%255, rand()%255, rand()%255, 255);
+                SDL_RenderDrawLine(renderer,linepoints.at(i).x,linepoints.at(i).y,linepoints.at(i+1).x,linepoints.at(i+1).y);
+            }
+        }
 
-            
-        //}
-        
-        // show screen
-        SDL_RenderPresent(renderer);
+        //render at my computer's refresh rate, 60hz
+        auto nextnano = std::chrono::high_resolution_clock::now();
+        auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
+        if (nanointerval > (1000000000/60))
+        {
+            startnano = nextnano;
+
+            SDL_RenderPresent(renderer);
+        }
     }
 
     return 0;
