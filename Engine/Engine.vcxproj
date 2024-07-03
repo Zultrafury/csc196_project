@@ -61,6 +61,9 @@
   <ItemGroup>
     <ClCompile Include="Engine.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vector2.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

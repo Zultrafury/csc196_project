@@ -1,5 +1,9 @@
+#include <chrono>
 #include <iostream>
 #include <SDL.h>
+#include <string>
+
+#include "Vector2.h"
 
 int main(int argc, char* argv[])
 {
@@ -26,26 +30,34 @@ int main(int argc, char* argv[])
     // create renderer
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    Vector2 mousepos(0,0);
+    
+    auto startnano = std::chrono::high_resolution_clock::now();
+    
     while (true)
     {
         // clear screen
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
 
-        // draw
-        for (int i = 0; i < 500; ++i)
+        auto nextnano = std::chrono::high_resolution_clock::now();
+        // draw and update
+        auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
+        if (nanointerval > (1000000000/60))
         {
-            SDL_SetRenderDrawColor(renderer,rand() % 256,rand() % 256,rand() % 256,0);
-            if (rand() % 50 == 0)
-            {
-                SDL_RenderDrawLine(renderer,rand() % 800,rand() % 600,rand() % 800,rand() % 600);
-            }
-            else
-            {
-                SDL_RenderDrawPoint(renderer,rand() % 800,rand() % 600);
-            }
-        }
+            startnano = nextnano;
 
+            //update
+            SDL_GetMouseState(&mousepos.x,&mousepos.y);
+
+            //draw
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+            std::cout << mousepos.x << ", " << mousepos.y << "\n";
+            //SDL_RenderDrawPoint(renderer,mousepos.x,mousepos.y);
+        }
+        
         // show screen
         SDL_RenderPresent(renderer);
     }
