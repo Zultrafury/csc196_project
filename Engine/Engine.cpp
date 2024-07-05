@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Vector2.h"
+#include "Particle.h"
 
 int main(int argc, char* argv[])
 {
@@ -42,6 +43,7 @@ int main(int argc, char* argv[])
 
     std::vector<Vector2> freestylepoints;
     std::vector<Vector2> linepoints;
+    std::vector<Particle> particles;
     Uint32 lineengage = 0;
     
     auto startnano = std::chrono::high_resolution_clock::now();
@@ -54,7 +56,7 @@ int main(int argc, char* argv[])
         SDL_RenderClear(renderer);
         
         // draw and update
-
+        /*
         //update
         Vector2 tempvector(0,0);
         Uint32 buttons = SDL_GetMouseState(&tempvector.x,&tempvector.y);
@@ -83,13 +85,44 @@ int main(int argc, char* argv[])
                 SDL_RenderDrawLine(renderer,linepoints.at(i).x,linepoints.at(i).y,linepoints.at(i+1).x,linepoints.at(i+1).y);
             }
         }
+        */
 
+        Vector2 tempvector(0,0);
+        Uint32 buttons = SDL_GetMouseState(&tempvector.x,&tempvector.y);
+        if (buttons == 1 && lineengage != 1)
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                int u = 3+(rand()%5);
+                float v = (6+(rand()%30))/6;
+                int r = 128 + (rand()%127);
+                int g = 128 + (rand()%127);
+                int b = 128 + (rand()%127);
+                for (int i = 0; i < u; ++i)
+                {
+                    float steprads = (i * (360/u)) * (3.14f / 180);
+                    Particle firework = Particle(FVector2(tempvector.x,tempvector.y),FVector2(cos(steprads) * v,sin(steprads) * v));
+                    particles.push_back(Particle(firework.pos,firework.velocity,r,g,b));
+                }
+            }
+        }
+        lineengage = buttons;
+        
         //render at my computer's refresh rate, 60hz
         auto nextnano = std::chrono::high_resolution_clock::now();
         auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
         if (nanointerval > (1000000000/60))
         {
             startnano = nextnano;
+
+            for (int i = 0; i < particles.size(); ++i)
+            {
+                if (particles.at(i).Update() && particles.size() > 0)
+                {
+                    //particles.erase(std::next(particles.begin(),i));
+                }
+                particles.at(i).Draw(renderer);
+            }
 
             SDL_RenderPresent(renderer);
         }
