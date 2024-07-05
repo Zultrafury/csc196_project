@@ -95,9 +95,9 @@ int main(int argc, char* argv[])
             {
                 int u = 3+(rand()%5);
                 float v = (6+(rand()%30))/6;
-                int r = 128 + (rand()%127);
-                int g = 128 + (rand()%127);
-                int b = 128 + (rand()%127);
+                int r = std::max(64 + (rand()%255),255);
+                int g = std::max(64 + (rand()%255),255);
+                int b = std::max(64 + (rand()%255),255);
                 for (int i = 0; i < u; ++i)
                 {
                     float steprads = (i * (360/u)) * (3.14f / 180);

@@ -28,9 +28,9 @@ public:
         pos.x += velocity.x; pos.y += velocity.y;
         velocity.x *= 0.99f;
         velocity.y *= 0.99f;
-        r--; if (r < 0) { r = 0; }
-        g--; if (g < 0) { g = 0; }
-        b--; if (b < 0) { b = 0; }
+        r--; if (r < 1) { r = 1; }
+        g--; if (g < 1) { g = 1; }
+        b--; if (b < 1) { b = 1; }
         if (velocity.x < 0.01f && velocity.y < 0.01f)
         {
             return true;
