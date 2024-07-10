@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "FVector2.h"
 #include "Vector2.h"
+#pragma warning( push )
+#pragma warning( disable : 4244 )
 
 class Particle
 {
@@ -44,3 +46,5 @@ public:
         SDL_RenderDrawPoint(renderer,pos.x,pos.y);
     }
 };
+
+#pragma warning( pop )
