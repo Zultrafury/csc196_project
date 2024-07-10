@@ -7,6 +7,7 @@
 
 #include "Vector2.h"
 #include "Particle.h"
+#include "Model.h"
 
 int win_h = 600;
 int win_w = 800;
@@ -219,6 +220,62 @@ void drumMachine(SDL_Renderer* renderer, FMOD::System* audio)
     }
 }
 
+void spiral(SDL_Renderer* renderer)
+{
+    std::vector<FVector2> linepoints;
+    linepoints.push_back(FVector2(0,0));
+    linepoints.push_back(FVector2(-1,1));
+    linepoints.push_back(FVector2(0,2));
+    linepoints.push_back(FVector2(1,0));
+    linepoints.push_back(FVector2(0,-2));
+    linepoints.push_back(FVector2(-2,-1));
+    linepoints.push_back(FVector2(-3,1));
+    linepoints.push_back(FVector2(-2,3));
+    linepoints.push_back(FVector2(0,4));
+    linepoints.push_back(FVector2(2,3));
+    linepoints.push_back(FVector2(3,0));
+    linepoints.push_back(FVector2(0,-4));
+    linepoints.push_back(FVector2(-4,-2));
+    linepoints.push_back(FVector2(-5,1));
+    linepoints.push_back(FVector2(-4,4));
+    linepoints.push_back(FVector2(-1,5));
+
+    for (int i = 0; i < linepoints.size(); ++i)
+    {
+        linepoints[i].x *= 40;
+        linepoints[i].y *= 40;
+    }
+    
+    Model model = Model(FVector2(win_w/2,win_h/2),linepoints);
+    
+    auto startnano = std::chrono::high_resolution_clock::now();
+    
+    while (true)
+    {
+        SDL_PumpEvents();
+        // clear screen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        Vector2 tempvector(0,0);
+        Uint32 buttons = SDL_GetMouseState(&tempvector.x,&tempvector.y);
+        
+        
+        //render at my computer's refresh rate, 60hz
+        auto nextnano = std::chrono::high_resolution_clock::now();
+        auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
+        if (nanointerval > (1000000000/60))
+        {
+            startnano = nextnano;
+
+            model.Draw(renderer);
+
+            SDL_RenderPresent(renderer);
+        }
+    }
+
+}
+
 int main(int argc, char* argv[])
 {
     // initialize SDL
@@ -261,7 +318,7 @@ int main(int argc, char* argv[])
     void* extradriverdata = nullptr;
     audio->init(32, FMOD_INIT_NORMAL, extradriverdata);
 
-    drumMachine(renderer, audio);
+    spiral(renderer);
     
     return 0;
 }
