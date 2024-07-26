@@ -25,7 +25,7 @@ public:
         r = rr; g = gg; b = bb;
     }
 
-    bool Update()
+    virtual bool Update()
     {
         pos.x += velocity.x; pos.y += velocity.y;
         velocity.x *= 0.99f;
@@ -40,7 +40,7 @@ public:
         return false;
     }
 
-    void Draw(SDL_Renderer* renderer)
+    virtual void Draw(SDL_Renderer* renderer)
     {
         SDL_SetRenderDrawColor(renderer, r, g, b, 255);
         SDL_RenderDrawPoint(renderer,pos.x,pos.y);

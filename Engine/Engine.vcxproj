@@ -62,10 +62,12 @@
     <ClCompile Include="Engine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="FVector2.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="Star.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>

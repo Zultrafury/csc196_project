@@ -6,14 +6,16 @@
 #include <string>
 #include <vector>
 
+#include "Enemy.h"
 #include "Font.h"
 #include "Vector2.h"
 #include "Particle.h"
 #include "Model.h"
+#include "Star.h"
 #include "Text.h"
 
-int win_h = 600;
-int win_w = 800;
+const int win_h = 900;
+const int win_w = 1200;
 
 /*
 void fireworks(SDL_Renderer* renderer)
@@ -281,6 +283,7 @@ void spiral(SDL_Renderer* renderer)
 }
 */
 
+/*
 void fonttext(SDL_Renderer* renderer)
 {
     // load font
@@ -310,6 +313,228 @@ void fonttext(SDL_Renderer* renderer)
 
             SDL_RenderPresent(renderer);
         }
+    }
+}
+*/
+
+void runGame(SDL_Renderer* renderer, FMOD::System* audio)
+{
+    int ticks = 0; int beats = 0;
+    FMOD::Sound* sound = nullptr;
+    int cha, rcha;
+    const Uint8* keystate;
+    bool lastkey[] = {0,0,0,0,0,0};
+
+    //Player
+    int lives = 3; int invuln = 0;
+    std::vector<FVector2> playermodel;
+    playermodel.emplace_back(1,0); playermodel.emplace_back(0.75,0.75); playermodel.emplace_back(0,1);
+    playermodel.emplace_back(-0.75,0.75); playermodel.emplace_back(-1,0); playermodel.emplace_back(-0.75,-0.75);
+    playermodel.emplace_back(0,-1); playermodel.emplace_back(0.75,-0.75); playermodel.emplace_back(1,0);
+    for (int i = 0; i < playermodel.size(); ++i)
+    {
+        playermodel[i].x *= 20;
+        playermodel[i].y *= 20;
+    }
+    Model player = Model(FVector2(win_w/2,win_h/2),playermodel);
+
+    //Music
+    std::vector<FMOD::Sound*> sounds;
+    FMOD::ChannelGroup* musicgroup = nullptr;
+    audio->createChannelGroup("Music",&musicgroup);
+    audio->createSound("snd/music.wav", FMOD_LOOP_NORMAL, 0, &sound);
+    sounds.push_back(sound);
+    audio->playSound(sounds[0],musicgroup,false,nullptr);
+    float musvolume = 0.8f;
+    musicgroup->setVolume(musvolume);
+
+    //Sounds
+    audio->createSound("snd/hurt.mp3", FMOD_DEFAULT, 0, &sound);
+    sounds.push_back(sound);
+
+    //Stars
+    std::vector<Star> stars;
+
+    //Enemies
+    std::vector<Enemy> enemies;
+
+    //Score + lives
+    int score = 0;
+    Font* font = new Font();
+    font->Load("Jupiteroid-Regular.ttf", 40);
+    Text* scoretext = new Text(font);
+    Text* livestext = new Text(font);
+    Uint8 playerpulse = 0;
+    
+    auto startnano = std::chrono::high_resolution_clock::now();
+    auto bstartnano = std::chrono::high_resolution_clock::now();
+    bool onbeat = false;
+    int beattype = 1;
+    float pulse = 0; 
+    
+    while(true)
+    {
+        SDL_PumpEvents();
+        audio->getChannelsPlaying(&cha,&rcha);
+        keystate = SDL_GetKeyboardState(nullptr);
+        
+        if (keystate[SDL_SCANCODE_MINUS])
+        {
+            musvolume = std::fmaxf(musvolume - 0.00001f,0.0);
+            musicgroup->setVolume(musvolume);
+        }
+
+        if (keystate[SDL_SCANCODE_EQUALS])
+        {
+            musvolume = std::fminf(musvolume + 0.00001f,1.0);
+            musicgroup->setVolume(musvolume);
+        }
+
+        //Move player to mouse
+        int mousex = 0; int mousey = 0;
+        SDL_GetMouseState(&mousex,&mousey);
+        if (lives > 0)
+        {
+            player.center = FVector2(mousex+5, mousey+9);
+            if (lives == 1)
+            {
+                player.center.x += (rand()%3) - 1;
+                player.center.y += (rand()%3) - 1;
+            }
+        }
+        
+        //render at my computer's refresh rate, 60hz
+        auto nextnano = std::chrono::high_resolution_clock::now();
+        auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano-startnano).count();
+
+        //Accurate bpm timing
+        auto bnextnano = std::chrono::high_resolution_clock::now();
+        auto bnanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(bnextnano-bstartnano).count();
+
+        if (bnanointerval > static_cast<int>(21.68674699*(1000000000.0/60)))
+        {
+            bstartnano = bnextnano;
+            onbeat = true;
+            beattype++;
+        }
+        
+        if (nanointerval > (1000000000/60))
+        {
+            ticks++;
+            startnano = nextnano;
+            
+            if (lives > 0)
+            {
+                //Board
+                if (onbeat)
+                {
+                    if (lives > 0) { score += 25; }
+                    if (beattype%2 == 1)
+                    {
+                        pulse = 88;
+                    }
+                    else
+                    {
+                        pulse = 64;
+                    }
+                }
+                if (beattype%2 == 1)
+                {
+                    pulse = std::fmaxf(pulse-3,0);
+                }
+                else
+                {
+                    pulse = std::fmaxf(pulse-1.5,0);
+                }
+                Uint8 pulse8 = static_cast<Uint8>(std::trunc(pulse));
+                SDL_SetRenderDrawColor(renderer, pulse8, 0, 0, 255);
+                SDL_RenderClear(renderer);
+
+                //Stars
+                //Star generation
+                if (ticks % 5 == 0)
+                {
+                    stars.emplace_back(FVector2(rand()%win_w,0),FVector2(0,8));
+                }
+            
+                //Star update + draw
+                SDL_SetRenderDrawColor(renderer,255,255,255,192);
+                for (int i = 0; i < stars.size(); ++i)
+                {
+                    stars[i].Update();
+                    if (stars[i].pos.y > win_h)
+                    {
+                        std::swap(stars[i],stars.back());
+                        stars.pop_back();
+                    }
+                    stars[i].Draw(renderer);
+                }
+
+                //Enemies
+                //Enemy generation
+                if ((onbeat && beattype%2 == 1) || (onbeat && score > 2000))
+                {
+                    enemies.emplace_back(win_w,win_h,playermodel);
+                }
+            
+                //Enemy update + draw
+                SDL_SetRenderDrawColor(renderer,255,0,0,255);
+                for (int i = 0; i < enemies.size(); ++i)
+                {
+                    if (enemies[i].Update(&player, ticks))
+                    {
+                        std::swap(enemies[i],enemies.back());
+                        enemies.pop_back();
+                    }
+
+                    //When within hit distance of player
+                    float hitrange = FVector2(enemies[i].center.x-player.center.x,enemies[i].center.y-player.center.y).Magnitude();
+                    if (hitrange < 10 && invuln < 1)
+                    {
+                        audio->playSound(sounds[1],nullptr,false,nullptr);
+                        lives--;
+                        invuln = 60;
+                    }
+                    enemies[i].Draw(renderer);
+                }
+            
+            
+                //Player drawing
+                playerpulse = 255 - (static_cast<Uint8>(std::trunc(pulse)) * ((3/std::max(lives,1))-1));
+                SDL_SetRenderDrawColor(renderer, playerpulse, playerpulse-(invuln*3), playerpulse-(invuln*3), playerpulse);
+                player.Draw(renderer);
+                invuln = std::max(invuln-1,0);
+
+                //Text drawing
+                scoretext->Create(renderer, std::to_string(score), SDL_Color{255, 255, 255, playerpulse});
+                livestext->Create(renderer, "HP: "+std::to_string(lives), SDL_Color{255, 255, 255, playerpulse});
+            }
+            else
+            {
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderClear(renderer);
+                playerpulse = 255;
+                musicgroup->setPaused(true);
+                
+                //Text drawing
+                scoretext->Create(renderer, "FINAL SCORE: "+std::to_string(score), SDL_Color{255, 255, 255, playerpulse});
+                livestext->Create(renderer, "GGS", SDL_Color{255, 255, 255, playerpulse});
+            }
+            if (lives < 2)
+            {
+                scoretext->Draw(renderer,80+((rand()%3) - 1), 60+((rand()%3) - 1)); livestext->Draw(renderer,win_w-120+((rand()%3) - 1), 60+((rand()%3) - 1));
+            }
+            else
+            {
+                scoretext->Draw(renderer,80, 60); livestext->Draw(renderer,win_w-120, 60);
+            }
+            
+            SDL_RenderPresent(renderer);
+
+            onbeat = false;
+        }
+        
+        audio->update();
     }
 }
 
@@ -363,7 +588,7 @@ int main(int argc, char* argv[])
     void* extradriverdata = nullptr;
     audio->init(32, FMOD_INIT_NORMAL, extradriverdata);
 
-    fonttext(renderer);
+    runGame(renderer, audio);
     
     return 0;
 }
