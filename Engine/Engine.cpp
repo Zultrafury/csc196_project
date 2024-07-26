@@ -2,12 +2,15 @@
 #include <iostream>
 #include <SDL.h>
 #include <fmod.hpp>
+#include <SDL_ttf.h>
 #include <string>
 #include <vector>
 
+#include "Font.h"
 #include "Vector2.h"
 #include "Particle.h"
 #include "Model.h"
+#include "Text.h"
 
 int win_h = 600;
 int win_w = 800;
@@ -104,7 +107,7 @@ void fireworks(SDL_Renderer* renderer)
 }
 */
 
-void drumMachine(SDL_Renderer* renderer, FMOD::System* audio)
+/* void drumMachine(SDL_Renderer* renderer, FMOD::System* audio)
 {
     FMOD::Sound* sound = nullptr;
     int cha, rcha;
@@ -218,8 +221,9 @@ void drumMachine(SDL_Renderer* renderer, FMOD::System* audio)
         
         audio->update();
     }
-}
+} */
 
+/*
 void spiral(SDL_Renderer* renderer)
 {
     std::vector<FVector2> linepoints;
@@ -275,15 +279,56 @@ void spiral(SDL_Renderer* renderer)
     }
 
 }
+*/
+
+void fonttext(SDL_Renderer* renderer)
+{
+    // load font
+    Font* font = new Font();
+    font->Load("Jupiteroid-Regular.ttf", 40);
+
+    Text* text = new Text(font);
+    text->Create(renderer, "Hello World", SDL_Color{255, 255, 255, 255});
+
+    auto startnano = std::chrono::high_resolution_clock::now();
+
+    while (true)
+    {
+        SDL_PumpEvents();
+        // clear screen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        //render at my computer's refresh rate, 60hz
+        auto nextnano = std::chrono::high_resolution_clock::now();
+        auto nanointerval = std::chrono::duration_cast<std::chrono::nanoseconds>(nextnano - startnano).count();
+        if (nanointerval > (1000000000 / 60))
+        {
+            startnano = nextnano;
+
+            text->Draw(renderer, win_w/2 - 60, win_h/2 - 20);
+
+            SDL_RenderPresent(renderer);
+        }
+    }
+}
 
 int main(int argc, char* argv[])
 {
     // initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        std::cerr << "Error initializing SDL: " << SDL_GetError() << std::endl;
+        std::cerr << "Error initializing SDL: " << SDL_GetError() << "\n";
         return 1;
     }
+
+    // initialize TTF SDL
+    if (TTF_Init() < 0)
+    {
+        std::cerr << "Error initializing SDL TTF: " << SDL_GetError() << "\n";
+        return 1;
+    }
+    
 
     // create window
     // returns pointer to window if successful or nullptr if failed
@@ -293,7 +338,7 @@ int main(int argc, char* argv[])
         SDL_WINDOW_SHOWN);
     if (window == nullptr)
     {
-        std::cerr << "Error creating SDL window: " << SDL_GetError() << std::endl;
+        std::cerr << "Error creating SDL window: " << SDL_GetError() << "\n";
         SDL_Quit();
         return 1;
     }
@@ -318,7 +363,7 @@ int main(int argc, char* argv[])
     void* extradriverdata = nullptr;
     audio->init(32, FMOD_INIT_NORMAL, extradriverdata);
 
-    spiral(renderer);
+    fonttext(renderer);
     
     return 0;
 }
